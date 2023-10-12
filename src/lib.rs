@@ -1,11 +1,11 @@
 use std::cell::Cell;
 use std::fmt;
 
-pub struct CellOpt<T: Clone + fmt::Debug> {
+pub struct CellOpt<T> {
     slot: Cell<Option<T>>,
 }
 
-impl<T: Clone + fmt::Debug> Default for CellOpt<T> {
+impl<T> Default for CellOpt<T> {
     fn default() -> Self {
         CellOpt {
             slot: Cell::new(None),
@@ -13,14 +13,14 @@ impl<T: Clone + fmt::Debug> Default for CellOpt<T> {
     }
 }
 
-impl<T: Clone + fmt::Debug> Clone for CellOpt<T> {
+impl<T: Clone> Clone for CellOpt<T> {
     fn clone(&self) -> Self {
         self.apply_then_restore(|inner| CellOpt::new(inner.clone()))
             .unwrap_or_default()
     }
 }
 
-impl<T: Clone + fmt::Debug> fmt::Debug for CellOpt<T> {
+impl<T: fmt::Debug> fmt::Debug for CellOpt<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         self.apply_then_restore(|inner| write!(f, "{}", format_args!("Option::Some({:?})", inner)))
             .unwrap_or_else(|| write!(f, "None"))
@@ -38,7 +38,7 @@ pub struct InsertErr<T> {
     pub err: ErrorType,
 }
 
-impl<T: Clone + fmt::Debug> CellOpt<T> {
+impl<T> CellOpt<T> {
     #[inline]
     pub fn new(value: T) -> Self {
         Self {
@@ -100,5 +100,13 @@ impl<T: Clone + fmt::Debug> CellOpt<T> {
     #[inline]
     pub fn overwrite(&self, value: impl Into<Option<T>>) {
         self.slot.replace(value.into());
+    }
+
+    #[inline]
+    pub fn clone_inner(&self) -> Option<T>
+    where
+        T: Clone,
+    {
+        self.apply_then_restore(|inner| inner.clone())
     }
 }
