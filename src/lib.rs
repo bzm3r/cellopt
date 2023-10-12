@@ -28,14 +28,14 @@ impl<T: fmt::Debug> fmt::Debug for CellOpt<T> {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum ErrorType {
+pub enum Error {
     Occupied,
     Empty,
 }
 
 pub struct InsertErr<T> {
     pub insert_try: T,
-    pub err: ErrorType,
+    pub err: Error,
 }
 
 impl<T> CellOpt<T> {
@@ -69,7 +69,7 @@ impl<T> CellOpt<T> {
         if self.is_occupied() {
             Err(InsertErr {
                 insert_try: value,
-                err: ErrorType::Occupied,
+                err: Error::Occupied,
             })
         } else {
             self.overwrite(value);
@@ -83,8 +83,8 @@ impl<T> CellOpt<T> {
     }
 
     #[inline]
-    pub fn take(&self) -> Result<T, ErrorType> {
-        self.slot.take().ok_or(ErrorType::Empty)
+    pub fn take(&self) -> Result<T, Error> {
+        self.slot.take().ok_or(Error::Empty)
     }
 
     #[inline]
@@ -98,8 +98,8 @@ impl<T> CellOpt<T> {
     }
 
     #[inline]
-    pub fn overwrite(&self, value: impl Into<Option<T>>) {
-        self.slot.replace(value.into());
+    pub fn overwrite(&self, value: T) {
+        self.slot.replace(Some(value));
     }
 
     #[inline]
